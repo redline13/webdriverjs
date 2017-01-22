@@ -1,0 +1,24 @@
+{
+  "name": "redline13-webdriver",
+  "version": "0.1.0",
+  "description": "RedLine13 harness for running webdriver test on RedLine13 platform ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "redline13",
+    "selenium",
+    "webdriver",
+    "phantomjs",
+    "chromedriver",
+    "geckodriver",
+    "chrome",
+    "firefox",
+		"loadtesting",
+		"load testing",
+		"performance testing",
+  ],
+  "author": "Richard Friedman",
+  "license": "MIT"
+}
