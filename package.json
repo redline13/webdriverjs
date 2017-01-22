@@ -17,12 +17,12 @@
     "firefox",
 		"loadtesting",
 		"load testing",
-		"performance testing",
+		"performance testing"
   ],
   "author": "Richard Friedman",
   "license": "MIT",
 	"repository": {
     "type": "git",
     "url": "git://github.com/redline13/webdriverjs.git"
-  },
+  }
 }
