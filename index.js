@@ -87,42 +87,31 @@ RedLineWebDriver.config = {};
 RedLineWebDriver.promises = [];
 
 // Wrap taking a snapshot
-RedLineWebDriver.snap = function( driver, filename ){
+RedLineWebDriver.snap = function( filename ){
 	var p = new Promise( function( resolve, reject) {
 		try{
-			driver.takeScreenshot().then(function(data){
+			RedLineWebDriver.driver.takeScreenshot().then(function(data){
 				var base64Data = data.replace(/^data:image\/png;base64,/,"")
 				fs.writeFile( 'output/' + RedLineWebDriver.user + '_' + filename, base64Data, 'base64', function(err) {
 					if(err){
 						console.log( "Error creating SNAP for " + filename, err );
-						reject(err);
+						resolve(err);
 					} else {
 						console.log( "SNAP: " + filename);
 						resolve();
 					}
 				});
+			},function(e){
+				resolve(e);
 			});
 		} catch ( e ){
 			console.log( "Exception creating SNAP for " + filename, e );
-			reject(e);
+			// We don't reject as it is a best try
+			resolve(e);
 		}
 	});
 	RedLineWebDriver.promises.push( p );
+	return p;
 }
-
-/**
- * Helper to handle when test fails.
- * - Captures screenshot
- * - Maybe invokes quit?
- */
-RedLineWebDriver.fail = function( err ){
-	RedLineWebDriver.snap( RedLineWebDriver.driver, "error-" + Date.now() + ".png" );
-	throw err;
-}
-
-/**
- * Helper function to ignore, typically success request.
- */
-RedLineWebDriver.ignore = function(){}
 
 module.exports = RedLineWebDriver;
