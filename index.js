@@ -46,8 +46,8 @@ RedLineWebDriver._loadWebDriver = function( browserName ){
 
 			// Override Quit to call back into browser to do post test closing ops.
 			RedLineWebDriver.driver._redlineQuit = RedLineWebDriver.driver.quit;
-			RedLineWebDriver.driver.quit = function(){
-				if ( closeInvoked === false ){
+			RedLineWebDriver.driver.quit = function( failed ){
+				if ( failed === true || closeInvoked === false ){
 					browser.close( RedLineWebDriver.user, RedLineWebDriver.api );
 					closeInvoked = RedLineWebDriver.driver._redlineQuit();
 				}
