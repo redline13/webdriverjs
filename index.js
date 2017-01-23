@@ -1,119 +1,20 @@
 var webdriver = require('selenium-webdriver');
 var fs = require('fs');
 
-/**
- * Used to setup the basics when running a load test.
- */
-function RedLineWebDriver(redlineApi, testNum, rand, config){
-
-	// Setup static available for webdriver script.
-	RedLineWebDriver.api = redlineApi;
-	RedLineWebDriver.user = testNum;
-	RedLineWebDriver.config = config;
-
-	// Redline API
-	this.redlineApi = redlineApi;
-
-	// Test info
-	this.testNum = testNum;
-	this.rand = rand;
-
-	// INI Config
-	this.config = config;
-}
-
-/**
- * Utilized by the RedLine13 Production Environment to launch test.
- * For local testing this function is not required.
- * 
- * @param callback method to invoke back into redline layer when test completes indicating if user was success/fail.
- */
-RedLineWebDriver.prototype.runTest = function(callback)
-{
-	var that = this;
-	var wd = that.config.customFile;
-	console.log( "Load webdriver test: " + wd );
-
-	// Async Invoke, parent waiting for callback invoke.
-	setTimeout(function() {
-		try
-		{
-			// Preload the webdriver and inject
-			that._loadWebDriver( that.config.webdriver_node_browser || "" )
-			.then( function(){
-
-					// We can catch WebDriver script issues
-					webdriver.promise.controlFlow().on('uncaughtException', function(e) {
-						console.log( "WebDriver Uncaught Exception", e )
-						that.redlineApi.recordError("WD Uncaught:"+e + (e.stack ? "\n" + e.stack : ""));
-						callback.call(that, true);
-					});
-
-					// Require the testers file ( bridge from RL to WD )
-					require( "./" + wd );
-
-					// CloseWebDriver operation if user did not call quit();
-					that.closeWebDriver();
-
-				// We wait for promises to complete, currently snapshots.
-				Promise.all( RedLineWebDriver.promises ).then(
-					function(values){
-						console.log( "Callback on tests running!" );
-						callback.call(that, false);
-					}
-				).catch( function(err){
-					console.log( "Catch - Promises ALL failing", err );
-					callback.call(that, true);
-				})
-
-			}).catch( function(err){
-				console.log( "Catch - Promise LoadTest Failing", err );
-				that.closeWebDriver();
-				that.redlineApi.recordError(""+err + (err.stack ? "\n" + err.stack : ""));
-				callback.call(that, true);
-			})
-
-		} catch (e) {
-			console.log( "Fallback Errror Trap", e )
-			that.closeWebDriver();
-			that.redlineApi.recordError(""+e + (e.stack ? "\n" + e.stack : ""));
-			callback.call(that, true);
-		}
-	}, 1);
-};
-
-/**
- * Hard cleanup for webdriver.
- * It is possible users script called this, which is problem
- * to capturing detailed metrics data for Chrome/FF (TODO: Use Extensions/AddOns)
- */
-RedLineWebDriver.closeWebDriver = function( ){
-	try{
-		if ( RedLineWebDriver.driver ) {
-			console.log( "Add close webdriver (quit) to end of sequence!");
-			RedLineWebDriver.driver.quit()
-			.then(
-				function(){
-					console.log( "GOOD: WEBDRIVER QUIT!");
-				})
-			.catch(
-				function(){
-					console.log( "BAD: WEBDRIVER QUIT!");
-				});
-		}
-	} catch (e) {
-		// Safely ignore exceptions
-	}
-}
+// Initialize Object to fill.
+RedLineWebDriver = function(){};
 
 /**
  * Your webdriver test should invoke this to access the browser/driver.
  * Also for dev creates ./output for snapshots and log/jtl files.
+ * @return Driver instance
  */
 RedLineWebDriver.loadBrowser = function( browser ){
 	if (!fs.existsSync('./output')){
 		fs.mkdirSync('./output');
 	}
+
+	// Instantiate webdriver, but allow promises to run any extra steps.
 	if ( !RedLineWebDriver.driver ){
 		RedLineWebDriver._loadWebDriver(browser).then(
 			function(){},
@@ -142,6 +43,8 @@ RedLineWebDriver._loadWebDriver = function( browserName ){
 			var browser = require( './lib/' + browserName );
 			returnPromise = browser.load(RedLineWebDriver.user, webdriver);
 			RedLineWebDriver.driver = browser.driver();
+
+			// Override Quit to call back into browser to do post test closing ops.
 			RedLineWebDriver.driver._redlineQuit = RedLineWebDriver.driver.quit;
 			RedLineWebDriver.driver.quit = function(){
 				if ( closeInvoked === false ){
@@ -212,8 +115,12 @@ RedLineWebDriver.snap = function( driver, filename ){
  * - Captures screenshot
  * - Maybe invokes quit?
  */
-RedLineWebDriver.fail = function(){
+RedLineWebDriver.fail = function( err ){
 	RedLineWebDriver.snap( RedLineWebDriver.driver, "error-" + Date.now() + ".png" );
+	if ( err ){
+		RedLineWebDriver.api.recordError( err.m)
+		console.log( err );
+	}
 }
 
 /**
@@ -222,6 +129,3 @@ RedLineWebDriver.fail = function(){
 RedLineWebDriver.ignore = function(){}
 
 module.exports = RedLineWebDriver;
-
-// var c = new RedLineWebDriver( { recordURLPageLoad: function(){} }, 1, 1, {} );
-// c.runTest( function(){} );
