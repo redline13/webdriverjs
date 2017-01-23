@@ -117,10 +117,7 @@ RedLineWebDriver.snap = function( driver, filename ){
  */
 RedLineWebDriver.fail = function( err ){
 	RedLineWebDriver.snap( RedLineWebDriver.driver, "error-" + Date.now() + ".png" );
-	if ( err ){
-		RedLineWebDriver.api.recordError( err.m)
-		console.log( err );
-	}
+	throw err;
 }
 
 /**

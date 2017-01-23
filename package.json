@@ -1,6 +1,6 @@
 {
   "name": "redline13-webdriver",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "RedLine13 harness for running webdriver test on RedLine13 platform ",
   "main": "index.js",
   "scripts": {
