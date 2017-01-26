@@ -9,14 +9,14 @@ RedLineWebDriver = function(){};
  * Also for dev creates ./output for snapshots and log/jtl files.
  * @return Driver instance
  */
-RedLineWebDriver.loadBrowser = function( browser ){
+RedLineWebDriver.loadBrowser = function( browser, domains, hardFilter ){
 	if (!fs.existsSync('./output')){
 		fs.mkdirSync('./output');
 	}
 
 	// Instantiate webdriver, but allow promises to run any extra steps.
 	if ( !RedLineWebDriver.driver ){
-		RedLineWebDriver._loadWebDriver(browser).then(
+		RedLineWebDriver._loadWebDriver(browser, domains, hardFilter).then(
 			function(){},
 			function(err){
 				console.log( "Failed to create browser." , err );
@@ -30,7 +30,7 @@ RedLineWebDriver.loadBrowser = function( browser ){
  * Load WebDriver and inject RedLine13 so we can look at performance.
  * @return promise which resolved to driver.
  */
-RedLineWebDriver._loadWebDriver = function( browserName ){
+RedLineWebDriver._loadWebDriver = function( browserName, domains, hardFilter ){
 	var returnPromise = null;
 	var closeInvoked = false;
 
@@ -41,7 +41,7 @@ RedLineWebDriver._loadWebDriver = function( browserName ){
 		case 'firefox':
 		case 'chrome':
 			var browser = require( './lib/' + browserName );
-			returnPromise = browser.load(RedLineWebDriver.user, webdriver);
+			returnPromise = browser.load(RedLineWebDriver.user, webdriver, domains, hardFilter);
 			RedLineWebDriver.driver = browser.driver();
 
 			// Override Quit to call back into browser to do post test closing ops.
