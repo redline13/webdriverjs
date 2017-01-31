@@ -15,14 +15,20 @@
     "geckodriver",
     "chrome",
     "firefox",
-		"loadtesting",
-		"load testing",
-		"performance testing"
+    "loadtesting",
+    "load testing",
+    "performance testing"
   ],
   "author": "Richard Friedman",
   "license": "MIT",
-	"repository": {
+  "repository": {
     "type": "git",
     "url": "git://github.com/redline13/webdriverjs.git"
+  },
+  "dependencies": {
+    "chromedriver": "^2.27.2",
+    "geckodriver": "^1.3.0",
+    "phantomjs-prebuilt": "^2.1.14",
+    "selenium-webdriver": "^3.0.1"
   }
 }
