@@ -16,7 +16,7 @@ RedLineWebDriver.loadBrowser = function( browser, domains, hardFilter ){
 
 	// Instantiate webdriver, but allow promises to run any extra steps.
 	if ( !RedLineWebDriver.driver ){
-		RedLineWebDriver._loadWebDriver(browser, domains, hardFilter).then(
+		RedLineWebDriver._loadWebDriver(browser, domains || "" , hardFilter || false ).then(
 			function(){},
 			function(err){
 				console.log( "Failed to create browser." , err );
@@ -43,6 +43,9 @@ RedLineWebDriver._loadWebDriver = function( browserName, domains, hardFilter ){
 			var browser = require( './lib/' + browserName );
 			returnPromise = browser.load(RedLineWebDriver.user, webdriver, domains, hardFilter);
 			RedLineWebDriver.driver = browser.driver();
+			RedLineWebDriver.driver.manage().timeouts().implicitlyWait(30000);
+			RedLineWebDriver.driver.manage().timeouts().setScriptTimeout(60000);
+			RedLineWebDriver.driver.manage().timeouts().pageLoadTimeout(120000);
 
 			// Override Quit to call back into browser to do post test closing ops.
 			RedLineWebDriver.driver._redlineQuit = RedLineWebDriver.driver.quit;
