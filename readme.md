@@ -27,6 +27,9 @@ In your webdriver test file
   browser.get( "http://example.com" );
 ```
 
+### Running at Scale on RedLine13
+Checkout out [redline13.com](redline13.com) and you can easily run this as 5 users or 5000 users.   We have example of running a 5000 user selenium-webdriver performance test for $10.
+
 ### redline13 methods
 __redline.loadBrowser( string browser, string domains, boolean hardFilter )__
 
