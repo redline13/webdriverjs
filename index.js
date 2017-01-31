@@ -7,6 +7,10 @@ RedLineWebDriver = function(){};
 /**
  * Your webdriver test should invoke this to access the browser/driver.
  * Also for dev creates ./output for snapshots and log/jtl files.
+ *
+ * @param browser phantomjs | chrome | firefox
+ * @param domains string space separated list of domains(regex) filters for inclusion in performance data
+ * @param hardFilter boolean true will cause anything not filtered to be ignored, false anything not filtered will be recorded only by domain name.
  * @return Driver instance
  */
 RedLineWebDriver.loadBrowser = function( browser, domains, hardFilter ){
