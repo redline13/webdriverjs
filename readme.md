@@ -1,4 +1,4 @@
-# RedLine13 Peformance Testing with WebDriverddd
+# RedLine13 Peformance Testing with WebDriver
 
 Runs WebDriver test to collect performance data and exports Apache JMeter data (as a .jtl)
 - PhantomJS - supports exporting performance data in realtime
