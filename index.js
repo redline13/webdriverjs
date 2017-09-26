@@ -43,6 +43,7 @@ RedLineWebDriver._loadWebDriver = function( browserName, domains, hardFilter ){
 
 		case 'phantomjs':
 		case 'firefox':
+		case 'firefox-headless':
 		case 'chrome':
 			var browser = require( './lib/' + browserName );
 			returnPromise = browser.load(RedLineWebDriver.user, webdriver, domains, hardFilter);
@@ -74,7 +75,7 @@ RedLineWebDriver._loadWebDriver = function( browserName, domains, hardFilter ){
 RedLineWebDriver.api = {
 	recordError: function(err){ console.log( "Recorded Error ", err ); },
 	recordURLPageLoad: function(url, ts, time, err, kb){
-		console.log( "Record Load Time for ("+url+") in ("+time+")"); 
+		console.log( "Record Load Time for ("+url+") in ("+time+")");
 	}
 };
 
@@ -90,7 +91,7 @@ RedLineWebDriver.user = 0;
 // Access to configuration object
 RedLineWebDriver.config = {};
 
-// Hold on to the call back for RedLineWebDriver.callback 
+// Hold on to the call back for RedLineWebDriver.callback
 RedLineWebDriver.promises = [];
 
 // Wrap taking a snapshot
