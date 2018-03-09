@@ -17,6 +17,11 @@ RedLineWebDriver.loadBrowser = function( browser, domains, hardFilter ){
 	if (!fs.existsSync('./output')){
 		fs.mkdirSync('./output');
 	}
+	var header = 'timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,grpThreads,allThreads,URL,Latency\n';
+	fs.writeFile( 'output/runLoadTest.jtl', header, function(err){
+		if (err) console.log("Failed to create output/runLoadTest.jtl", err);
+	});
+
 
 	// Instantiate webdriver, but allow promises to run any extra steps.
 	if ( !RedLineWebDriver.driver ){
@@ -27,6 +32,8 @@ RedLineWebDriver.loadBrowser = function( browser, domains, hardFilter ){
 			}
 		);
 	}
+
+
 	return RedLineWebDriver.driver;
 }
 
@@ -37,20 +44,90 @@ RedLineWebDriver.loadBrowser = function( browser, domains, hardFilter ){
 RedLineWebDriver._loadWebDriver = function( browserName, domains, hardFilter ){
 	var returnPromise = null;
 	var closeInvoked = false;
+	var recordedMetrics = {};
+	// Simple function to convert Performance metric to jmeter format.
+	var record = function( start, metric ){
+		metric.name = metric.name.replace( /,/g, '%2C');
+
+		RedLineWebDriver.api.recordURLPageLoad(
+			metric.name,
+			Math.round((start + metric.startTime)/1000),
+			Math.round(metric.duration),
+			false,
+			metric.transferSize || 0
+		);
+
+		var jtl = [];
+		jtl.push( Math.round(start + metric.startTime) );
+		jtl.push( Math.round(metric.duration) );
+		jtl.push( metric.name );
+		jtl.push( 200 );
+		jtl.push( "OK" );
+		jtl.push( "Thread Group 1-" + RedLineWebDriver.user );
+		jtl.push( metric.initiatorType || 'unknown' );
+		jtl.push( true );
+		jtl.push( "" );
+		jtl.push( metric.transferSize || 0 );
+		jtl.push( "1" );
+		jtl.push( "1" );
+		jtl.push( metric.entryType );
+		jtl.push( Math.round(metric.responseStart - metric.requestStart) );
+		return jtl;
+	}
 
 	// Take action on browser type
 	switch( browserName ) {
-
 		case 'phantomjs':
 		case 'firefox':
 		case 'firefox-headless':
 		case 'chrome':
+		case 'chrome-headless':
 			var browser = require( './lib/' + browserName );
 			returnPromise = browser.load(RedLineWebDriver.user, webdriver, domains, hardFilter);
 			RedLineWebDriver.driver = browser.driver();
 			RedLineWebDriver.driver.manage().timeouts().implicitlyWait(30000);
 			RedLineWebDriver.driver.manage().timeouts().setScriptTimeout(60000);
 			RedLineWebDriver.driver.manage().timeouts().pageLoadTimeout(120000);
+
+			RedLineWebDriver.driver.recordMetrics = function ( label ){
+				RedLineWebDriver.driver.executeScript(`
+	if ( ! window.performance || !window.performance.timeOrigin ) return null;
+	var data = {
+		start : Math.round(window.performance.timeOrigin),
+		navigation: window.performance.getEntriesByType('navigation'),
+		resources: window.performance.getEntriesByType('resource')
+	};
+	window.performance.clearResourceTimings();
+	return data;
+`).then( function(metrics){
+					if ( metrics == null ){
+						console.log( "No Metrics");
+					} else {
+						_record = [];
+						// Have we already recorded this label and start?
+						if ( !recordedMetrics[metrics.start] && metrics.navigation.length > 0 ){
+							recordedMetrics[metrics.start] = true;
+							metrics.navigation[0].name = label;
+							_record.push( record( metrics.start, metrics.navigation[0] ) );
+						}
+						// Did we capture resources
+						if ( metrics.resources ){
+							metrics.resources.forEach( function(metric){
+								_record.push( record( metrics.start, metric ) );
+							});
+						}
+						// Write to jmeter csv file
+						if ( _record.length > 0 ){
+							var buffer = _record.reduce( function( buf, val ){ return buf + val.join(',') + "\n";}, '' );
+							fs.appendFile( "output/runLoadTest.jtl", buffer, function(err){
+								if (err) console.log("Failed to write .jtl", err);
+							});
+						}
+						_record = null;
+						return;
+					}
+				})
+			}
 
 			// Override Quit to call back into browser to do post test closing ops.
 			RedLineWebDriver.driver._redlineQuit = RedLineWebDriver.driver.quit;
