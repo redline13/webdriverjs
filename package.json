@@ -1,7 +1,7 @@
 {
   "name": "redline13-webdriver",
-  "version": "0.3.6",
-  "description": "RedLine13 harness for running webdriver test on RedLine13 platform ",
+  "version": "0.4.0",
+  "description": "RedLine13 harness for running webdriver test on RedLine13 platform and capturing api metrics through the browser for chrome, chrome-headless, firefox, firefox-headless, phantomjs",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,9 @@
     "chromedriver",
     "geckodriver",
     "chrome",
+    "chrome headless",
     "firefox",
+    "firefox headless",
     "loadtesting",
     "load testing",
     "performance testing"
