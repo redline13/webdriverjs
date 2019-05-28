@@ -8,7 +8,7 @@ RedLineWebDriver = function(){};
  * Your webdriver test should invoke this to access the browser/driver.
  * Also for dev creates ./output for snapshots and log/jtl files.
  *
- * @param browser phantomjs | chrome | firefox
+ * @param browser  chrome | firefox | chrome-headless | firefox-headless
  * @param domains string space separated list of domains(regex) filters for inclusion in performance data
  * @param hardFilter boolean true will cause anything not filtered to be ignored, false anything not filtered will be recorded only by domain name.
  * @return Driver instance
@@ -18,10 +18,7 @@ RedLineWebDriver.loadBrowser = function( browser, domains, hardFilter ){
 		fs.mkdirSync('./output');
 	}
 	var header = 'timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,grpThreads,allThreads,URL,Latency\n';
-	fs.writeFile( 'output/runLoadTest.jtl', header, function(err){
-		if (err) console.log("Failed to create output/runLoadTest.jtl", err);
-	});
-
+	RedLineWebDriver.api.writeJTL( header );
 
 	// Instantiate webdriver, but allow promises to run any extra steps.
 	if ( !RedLineWebDriver.driver ){
@@ -54,7 +51,9 @@ RedLineWebDriver._loadWebDriver = function( browserName, domains, hardFilter ){
 			Math.round((start + metric.startTime)/1000),
 			Math.round(metric.duration),
 			false,
-			metric.transferSize || 0
+			metric.transferSize || 0,
+			200,
+			RedLineWebDriver.user
 		);
 
 		var jtl = [];
@@ -119,9 +118,7 @@ RedLineWebDriver._loadWebDriver = function( browserName, domains, hardFilter ){
 						// Write to jmeter csv file
 						if ( _record.length > 0 ){
 							var buffer = _record.reduce( function( buf, val ){ return buf + val.join(',') + "\n";}, '' );
-							fs.appendFile( "output/runLoadTest.jtl", buffer, function(err){
-								if (err) console.log("Failed to write .jtl", err);
-							});
+							RedLineWebDriver.api.writeJTL( buffer );
 						}
 						_record = null;
 						return;
@@ -151,8 +148,13 @@ RedLineWebDriver._loadWebDriver = function( browserName, domains, hardFilter ){
 // Acccess to RedLineApi object for metrics.  A mock api is instantiated by constructor will replace for production.
 RedLineWebDriver.api = {
 	recordError: function(err){ console.log( "Recorded Error ", err ); },
-	recordURLPageLoad: function(url, ts, time, err, kb){
+	recordURLPageLoad: function(url, ts, time, err, kb, rc, user){
 		console.log( "Record Load Time for ("+url+") in ("+time+")");
+	},
+	writeJTL: function( buf ){
+		fs.appendFile( "output/runLoadTest.jtl", buf, function(err){
+			if (err) console.log("Failed to write .jtl", err);
+		});
 	}
 };
 
