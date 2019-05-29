@@ -49,7 +49,7 @@ RedLineWebDriver._loadWebDriver = function( browserName, domains, hardFilter ){
 		RedLineWebDriver.api.recordURLPageLoad(
 			metric.name,
 			Math.round((start + metric.startTime)/1000),
-			Math.round(metric.duration),
+			Math.round(metric.duration/1000),
 			false,
 			metric.transferSize || 0,
 			200,
