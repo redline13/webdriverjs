@@ -1,6 +1,6 @@
 {
   "name": "redline13-webdriver",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "RedLine13 harness for running webdriver test on RedLine13 platform and capturing api metrics through the browser for chrome, chrome-headless, firefox, firefox-headless, phantomjs",
   "main": "index.js",
   "scripts": {
