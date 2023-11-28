@@ -1,6 +1,6 @@
 {
   "name": "redline13-webdriver",
-  "version": "0.8.1",
+  "version": "0.8.119.421",
   "description": "RedLine13 harness for running webdriver test on RedLine13 platform and capturing api metrics through the browser for chrome, chrome-headless, firefox, firefox-headless, phantomjs",
   "main": "index.js",
   "scripts": {
@@ -28,8 +28,8 @@
     "url": "git://github.com/redline13/webdriverjs.git"
   },
   "dependencies": {
-    "chromedriver": "105.0",
-    "geckodriver": "3.0.2",
+    "chromedriver": "119.0",
+    "geckodriver": "4.2.1",
     "phantomjs-prebuilt": "^2.1.16",
     "selenium-webdriver": "^3.6"
   }
